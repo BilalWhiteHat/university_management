@@ -1,8 +1,8 @@
 // Data/UniversityContext.cs
 using Microsoft.EntityFrameworkCore;
-using UniversityManagement.Models;
+using university_management.Models;
 
-namespace UniversityManagement.Data
+namespace university_management.Data
 {
     public class UniversityContext : DbContext
     {
