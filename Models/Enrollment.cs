@@ -9,16 +9,16 @@ namespace university_management.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Please select a student")]
-        [ValidateNever]
         public int StudentId { get; set; }
         
-        public Student Student { get; set; } = new Student();
+        [ValidateNever]
+        public Student? Student { get; set; }
 
         [Required(ErrorMessage = "Please select a course")]
-        [ValidateNever]
         public int CourseId { get; set; }
         
-        public Course Course { get; set; } = new Course();
+        [ValidateNever]
+        public Course? Course { get; set; }
 
         public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
 

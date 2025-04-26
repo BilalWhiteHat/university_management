@@ -49,34 +49,32 @@ namespace university_management.Controllers
         // GET: Enrollment/Create
         public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Title");
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Name");
+            PopulateDropdowns();
             return View();
         }
 
         // POST: Enrollment/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,StudentId,CourseId,EnrollmentDate,Grade")] Enrollment enrollment)
         {
+            Console.WriteLine("Create action hit");
+            Console.WriteLine($"enrollment Data: StudentId={enrollment.StudentId}, CourseId={enrollment.CourseId}, EnrollmentDate={enrollment.EnrollmentDate}, Grade={enrollment.Grade}");
+
             if (ModelState.IsValid)
             {
                 _context.Add(enrollment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            
+
             // Log validation errors for debugging
             foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
             {
                 Console.WriteLine(error.ErrorMessage);
             }
-            
-            // Repopulate dropdowns if validation fails
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Title", enrollment.CourseId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Name", enrollment.StudentId);
+
+            PopulateDropdowns(enrollment);
             return View(enrollment);
         }
 
@@ -94,7 +92,7 @@ namespace university_management.Controllers
                 return NotFound();
             }
 
-            PopulateDropdowns(enrollment); // Populate dropdowns for StudentId and CourseId
+            PopulateDropdowns(enrollment);
             return View(enrollment);
         }
 
@@ -135,7 +133,7 @@ namespace university_management.Controllers
                 Console.WriteLine(error.ErrorMessage);
             }
 
-            PopulateDropdowns(enrollment); // Repopulate dropdowns if validation fails
+            PopulateDropdowns(enrollment);
             return View(enrollment);
         }
 
@@ -179,10 +177,10 @@ namespace university_management.Controllers
             return _context.Enrollments.Any(e => e.Id == id);
         }
 
-        private void PopulateDropdowns(Enrollment enrollment)
+        private void PopulateDropdowns(Enrollment enrollment = null)
         {
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Title", enrollment.CourseId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Email", enrollment.StudentId);
+            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Title", enrollment?.CourseId);
+            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Name", enrollment?.StudentId);
         }
     }
 }

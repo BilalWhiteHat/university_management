@@ -34,9 +34,7 @@
                     <option value="">Select Grade</option>
                     @foreach (var grade in Enum.GetValues(typeof(university_management.Models.Grade)))
                     {
-                        <option value="@grade" @(Model.Grade == (university_management.Models.Grade)grade ? "selected" : "")>
-                            @grade
-                        </option>
+                        <option value="@grade" selected="@(Model.Grade == (university_management.Models.Grade)grade)">@grade</option>
                     }
                 </select>
                 <span asp-validation-for="Grade" class="text-danger"></span>
