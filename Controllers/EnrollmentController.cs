@@ -50,7 +50,7 @@ namespace university_management.Controllers
         public IActionResult Create()
         {
             ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Title");
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Email");
+            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Name");
             return View();
         }
 
@@ -67,8 +67,16 @@ namespace university_management.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            
+            // Log validation errors for debugging
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                Console.WriteLine(error.ErrorMessage);
+            }
+            
+            // Repopulate dropdowns if validation fails
             ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Title", enrollment.CourseId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Email", enrollment.StudentId);
+            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Name", enrollment.StudentId);
             return View(enrollment);
         }
 
@@ -85,14 +93,12 @@ namespace university_management.Controllers
             {
                 return NotFound();
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Title", enrollment.CourseId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Email", enrollment.StudentId);
+
+            PopulateDropdowns(enrollment); // Populate dropdowns for StudentId and CourseId
             return View(enrollment);
         }
 
         // POST: Enrollment/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,StudentId,CourseId,EnrollmentDate,Grade")] Enrollment enrollment)
@@ -122,8 +128,14 @@ namespace university_management.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Title", enrollment.CourseId);
-            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Email", enrollment.StudentId);
+
+            // Log validation errors for debugging
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                Console.WriteLine(error.ErrorMessage);
+            }
+
+            PopulateDropdowns(enrollment); // Repopulate dropdowns if validation fails
             return View(enrollment);
         }
 
@@ -165,6 +177,12 @@ namespace university_management.Controllers
         private bool EnrollmentExists(int id)
         {
             return _context.Enrollments.Any(e => e.Id == id);
+        }
+
+        private void PopulateDropdowns(Enrollment enrollment)
+        {
+            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Title", enrollment.CourseId);
+            ViewData["StudentId"] = new SelectList(_context.Students, "Id", "Email", enrollment.StudentId);
         }
     }
 }
