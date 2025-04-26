@@ -1,4 +1,3 @@
-// Data/UniversityContext.cs
 using Microsoft.EntityFrameworkCore;
 using university_management.Models;
 
@@ -16,21 +15,50 @@ namespace university_management.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Ensure all DateTime properties are saved as UTC and read back as UTC
+            // Configure UTC for all DateTime properties
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 foreach (var property in entityType.GetProperties())
                 {
-                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    if (property.ClrType == typeof(DateTime))
                     {
-                        modelBuilder.Entity(entityType.ClrType)
+                        modelBuilder.Entity(entityType.Name)
                             .Property<DateTime>(property.Name)
                             .HasConversion(
-                                v => v.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(v, DateTimeKind.Utc) : v.ToUniversalTime(),
+                                v => v.Kind == DateTimeKind.Unspecified 
+                                    ? DateTime.SpecifyKind(v, DateTimeKind.Utc) 
+                                    : v.ToUniversalTime(),
                                 v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    }
+                    else if (property.ClrType == typeof(DateTime?))
+                    {
+                        modelBuilder.Entity(entityType.Name)
+                            .Property<DateTime?>(property.Name)
+                            .HasConversion(
+                                v => v.HasValue 
+                                    ? (v.Value.Kind == DateTimeKind.Unspecified 
+                                        ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) 
+                                        : v.Value.ToUniversalTime())
+                                    : v,
+                                v => v.HasValue 
+                                    ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) 
+                                    : v);
                     }
                 }
             }
+
+            // Configure relationships
+            modelBuilder.Entity<Enrollment>()
+                .HasOne(e => e.Student)
+                .WithMany()
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Enrollment>()
+                .HasOne(e => e.Course)
+                .WithMany(c => c.Enrollments)
+                .HasForeignKey(e => e.CourseId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
